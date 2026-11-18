@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Employee Management System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===================== LOGIN ===================== -->
+  <section id="loginView" class="login-wrap">
+    <form id="loginForm" class="card login-card" autocomplete="off">
+      <h1>Employee Management System</h1>
+      <p class="muted">Please log in to continue</p>
+      <label>Username <input id="loginUsername" required autofocus></label>
+      <label>Password <input id="loginPassword" type="password" required></label>
+      <div id="loginError" class="error" hidden></div>
+      <button type="submit" class="btn primary">Login</button>
+    </form>
+  </section>
+
+  <!-- ===================== MAIN APP ===================== -->
+  <section id="appView" hidden>
+    <header class="topbar">
+      <div class="brand">Employee Management System</div>
+      <div class="who">
+        <span id="whoLabel"></span>
+        <button id="changePasswordBtn" class="btn small">Change Password</button>
+        <button id="logoutBtn" class="btn small">Logout</button>
+      </div>
+    </header>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="employees">Employees</button>
+      <button class="tab" data-tab="reports">Reports</button>
+      <button class="tab admin-only" data-tab="users" hidden>Users</button>
+      <button class="tab admin-only" data-tab="audit" hidden>Activity Log</button>
+    </nav>
+
+    <main>
+      <div id="notice" class="notice" hidden></div>
+
+      <!-- Employees -->
+      <section id="tab-employees" class="panel">
+        <div class="toolbar">
+          <input id="searchInput" placeholder="Search by name or ID">
+          <select id="deptFilter"></select>
+          <button id="clearBtn" class="btn">Clear</button>
+          <span class="spacer"></span>
+          <button id="downloadEmployeesBtn" class="btn">Download CSV</button>
+          <button id="addBtn" class="btn primary" hidden>+ Add Employee</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Name</th><th>Type</th><th>Department</th><th>Designation</th>
+                <th>Email</th><th>Phone</th><th>Joined</th><th class="num">Monthly Pay</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="employeeRows"></tbody>
+          </table>
+        </div>
+        <div id="employeeStatus" class="muted status"></div>
+      </section>
+
+      <!-- Reports -->
+      <section id="tab-reports" class="panel" hidden>
+        <div class="toolbar">
+          <button id="downloadReportBtn" class="btn primary">Download Report (CSV / Excel)</button>
+        </div>
+        <div id="reportCards" class="cards"></div>
+        <h3>Department summary</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Department</th><th>Employees</th><th></th><th class="num">Average pay</th><th class="num">Total pay</th></tr></thead>
+            <tbody id="reportRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Users (admin) -->
+      <section id="tab-users" class="panel" hidden>
+        <form id="userForm" class="toolbar" autocomplete="off">
+          <input id="newUsername" placeholder="Username" required>
+          <input id="newPassword" type="password" placeholder="Password" required>
+          <select id="newRole">
+            <option value="VIEWER">VIEWER (read-only)</option>
+            <option value="HR">HR (manage employees)</option>
+            <option value="ADMIN">ADMIN (everything)</option>
+          </select>
+          <button type="submit" class="btn primary">Create User</button>
+        </form>
+        <p class="muted">Password: at least 8 characters, with a letter and a digit.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Username</th><th>Role</th></tr></thead>
+            <tbody id="userRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Audit (admin) -->
+      <section id="tab-audit" class="panel" hidden>
+        <p class="muted">The latest 100 actions.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+            <tbody id="auditRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <!-- ===================== DIALOGS ===================== -->
+  <dialog id="employeeDialog">
+    <form id="employeeForm" autocomplete="off">
+      <h2 id="employeeDialogTitle">Add Employee</h2>
+      <div class="form-grid">
+        <label>Full name <input id="fName" required></label>
+        <label>Email <input id="fEmail" type="email" required></label>
+        <label>Phone (10 digits) <input id="fPhone" required inputmode="numeric" maxlength="10"></label>
+        <label>Department <select id="fDepartment"></select></label>
+        <label>Designation <input id="fDesignation" required></label>
+        <label>Joining date <input id="fJoined" type="date" required></label>
+        <label>Employee type
+          <select id="fType">
+            <option value="FULL_TIME">Full-time</option>
+            <option value="PART_TIME">Part-time</option>
+          </select>
+        </label>
+        <label id="basicWrap">Basic monthly salary <input id="fBasic" type="number" min="0" step="0.01"></label>
+        <label id="rateWrap" hidden>Hourly rate <input id="fRate" type="number" min="0" step="0.01"></label>
+        <label id="hoursWrap" hidden>Hours worked (1-300) <input id="fHours" type="number" min="1" max="300"></label>
+      </div>
+      <div id="employeeFormError" class="error" hidden></div>
+      <div class="dialog-actions">
+        <button type="button" id="employeeCancel" class="btn">Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="payslipDialog">
+    <div id="payslipBody"></div>
+    <div class="dialog-actions">
+      <button type="button" id="payslipPrint" class="btn">Print / Save as PDF</button>
+      <button type="button" id="payslipClose" class="btn primary">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="passwordDialog">
+    <form id="passwordForm" autocomplete="off">
+      <h2>Change Password</h2>
+      <div class="form-grid single">
+        <label>Current password <input id="pOld" type="password" required></label>
+        <label>New password <input id="pNew" type="password" required></label>
+        <label>Confirm new password <input id="pConfirm" type="password" required></label>
+      </div>
+      <div id="passwordError" class="error" hidden></div>
+      <div class="dialog-actions">
+        <button type="button" id="passwordCancel" class="btn">Cancel</button>
+        <button type="submit" class="btn primary">Change</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
