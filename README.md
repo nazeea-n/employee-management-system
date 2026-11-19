@@ -82,5 +82,7 @@ Attendance and leave management, Docker, deployment, pagination.
 ## Screenshots
 
 ![Employees](screenshots/employees.png)
+
 ![Reports](screenshots/reports.png)
+
 ![Payslip](screenshots/payslip.png)
